@@ -1,0 +1,24 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  decontam: 43497 13-grams indexed from HumanEval-164 + MBPP
+[stream 1] general Python replay
+Repo card metadata block was not found. Setting CardData to empty.
+  loaded codeparrot/codeparrot-clean-train {'split': 'train', 'streaming': True}
+Repo card metadata block was not found. Setting CardData to empty.
+  loaded codeparrot/codeparrot-clean-valid {'split': 'train', 'streaming': True}
+  stream1: 10584 train windows, 94 eval windows
+[stream 2] clean docstring functions
+  loaded Nan-Do/code-search-net-python {'split': 'train'}
+  stream2: 6615 train, 94 eval
+[stream 3] competitive reasoning as pure functions
+  TACO pure-function candidates: call-based=3198 other=2733
+  code_contests pure-function candidates: 108
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (289005 > 262144). Running this sequence through the model will result in indexing errors
+  stream3: 3969 train
+  taco_test: 94 docs
+
+=== Phase D data written: /home/ubuntu/phase_d_data_ablation2.pt ===
+  stream1: 10584 (50.0%)
+  stream2: 6615 (31.2%)
+  stream3: 3969 (18.8%)
+  eval: taco=94 ood_pretrain=94 ood_func=94 he=164 mbpp=100
+  decontam collisions dropped: 19

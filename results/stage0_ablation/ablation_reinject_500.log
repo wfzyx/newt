@@ -1,0 +1,37 @@
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:   0%|          | 1/426 [00:00<00:44,  9.56it/s]Loading weights:  11%|█         | 46/426 [00:00<00:01, 247.60it/s]Loading weights:  22%|██▏       | 95/426 [00:00<00:00, 348.55it/s]Loading weights:  34%|███▍      | 145/426 [00:00<00:00, 403.78it/s]Loading weights:  44%|████▎     | 186/426 [00:00<00:00, 403.57it/s]Loading weights:  55%|█████▍    | 234/426 [00:00<00:00, 424.44it/s]Loading weights:  65%|██████▌   | 277/426 [00:00<00:00, 424.32it/s]Loading weights:  75%|███████▌  | 320/426 [00:00<00:00, 422.28it/s]Loading weights:  85%|████████▌ | 364/426 [00:00<00:00, 423.25it/s]Loading weights:  97%|█████████▋| 412/426 [00:01<00:00, 428.39it/s]Loading weights: 100%|██████████| 426/426 [00:01<00:00, 397.90it/s]
+[reinject] eval slices: {'taco_test': 150, 'ood_pretrain': 150, 'ood_func': 150}
+[reinject] data: {1: 10584, 2: 6615, 3: 3969}
+[reinject_500] trainable LoRA/adapter params: 55.8M (+2 gate scalars)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[reinject_500] step-0 parity max|logits_L3 - logits_L1| = 2.062e+00  CE_L1=0.8085 CE_L3=0.8081
+[reinject_500] S1 loss=1.2692 s1=1.409 s2=1.239 s3=0.945 lr=1.00e-06 gn=0.75 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.001 B3=0.000 w=0.9900/0.9900 ETA 123m (14.7s/step)
+[reinject_500] S25 loss=0.9859 s1=1.149 s2=1.029 s3=0.478 lr=2.50e-05 gn=0.76 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.057 B3=0.000 w=0.9898/0.9898 ETA 69m (8.7s/step)
+[reinject_500] S50 loss=1.0431 s1=1.211 s2=1.135 s3=0.443 lr=5.00e-05 gn=0.80 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.155 B3=0.000 w=0.9890/0.9888 ETA 65m (8.6s/step)
+[reinject_500] S75 loss=0.9681 s1=1.209 s2=0.948 s3=0.359 lr=4.97e-05 gn=0.58 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.248 B3=0.000 w=0.9880/0.9877 ETA 61m (8.6s/step)
+[reinject_500] S100 loss=0.9459 s1=1.163 s2=0.885 s3=0.468 lr=4.86e-05 gn=0.81 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.319 B3=0.000 w=0.9867/0.9862 ETA 57m (8.6s/step)
+[reinject_500] S125 loss=0.8750 s1=1.035 s2=0.866 s3=0.464 lr=4.70e-05 gn=0.71 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.373 B3=0.000 w=0.9856/0.9849 ETA 54m (8.6s/step)
+[reinject_500] S150 loss=0.7588 s1=0.999 s2=0.635 s3=0.324 lr=4.47e-05 gn=0.86 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.423 B3=0.000 w=0.9844/0.9832 ETA 50m (8.6s/step)
+[reinject_500] S175 loss=1.0676 s1=1.365 s2=0.964 s3=0.449 lr=4.20e-05 gn=0.76 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.463 B3=0.000 w=0.9828/0.9814 ETA 46m (8.6s/step)
+[reinject_500] S200 loss=0.8506 s1=0.909 s2=0.895 s3=0.622 lr=3.87e-05 gn=0.73 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.490 B3=0.000 w=0.9818/0.9801 ETA 43m (8.5s/step)
+[reinject_500] S225 loss=1.0671 s1=1.195 s2=1.319 s3=0.306 lr=3.52e-05 gn=0.71 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.511 B3=0.000 w=0.9811/0.9790 ETA 39m (8.5s/step)
+[reinject_500] S250 loss=1.0255 s1=1.193 s2=1.131 s3=0.404 lr=3.14e-05 gn=0.89 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.528 B3=0.000 w=0.9806/0.9781 ETA 36m (8.5s/step)
+[reinject_500] S275 loss=1.0825 s1=1.305 s2=1.090 s3=0.476 lr=2.75e-05 gn=0.77 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.543 B3=0.000 w=0.9796/0.9770 ETA 32m (8.5s/step)
+[reinject_500] S300 loss=0.9286 s1=1.162 s2=0.801 s3=0.520 lr=2.36e-05 gn=0.58 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.554 B3=0.000 w=0.9785/0.9758 ETA 28m (8.5s/step)
+[reinject_500] S325 loss=0.8985 s1=1.157 s2=0.747 s3=0.460 lr=1.98e-05 gn=0.64 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.561 B3=0.000 w=0.9780/0.9750 ETA 25m (8.5s/step)
+[reinject_500] S350 loss=1.0228 s1=1.240 s2=1.068 s3=0.368 lr=1.63e-05 gn=0.57 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.565 B3=0.000 w=0.9778/0.9745 ETA 21m (8.5s/step)
+[reinject_500] S375 loss=1.0430 s1=1.178 s2=1.283 s3=0.282 lr=1.30e-05 gn=0.65 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.569 B3=0.000 w=0.9775/0.9742 ETA 18m (8.5s/step)
+[reinject_500] S400 loss=0.9932 s1=1.187 s2=1.092 s3=0.312 lr=1.03e-05 gn=0.62 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.572 B3=0.000 w=0.9776/0.9741 ETA 14m (8.5s/step)
+[reinject_500] S425 loss=1.1118 s1=1.251 s2=1.128 s3=0.714 lr=8.01e-06 gn=0.93 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.572 B3=0.000 w=0.9773/0.9737 ETA 11m (8.5s/step)
+[reinject_500] S450 loss=0.9561 s1=1.083 s2=1.008 s3=0.530 lr=6.36e-06 gn=0.70 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.573 B3=0.000 w=0.9770/0.9733 ETA 7m (8.5s/step)
+[reinject_500] S475 loss=0.9211 s1=1.181 s2=0.651 s3=0.679 lr=5.34e-06 gn=0.59 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.573 B3=0.000 w=0.9768/0.9731 ETA 4m (8.5s/step)
+[reinject_500] S500 loss=0.9657 s1=1.259 s2=0.674 s3=0.669 lr=5.00e-06 gn=0.66 g2=+0.000/+0.000 g3=+0.000/+0.000 B2=0.573 B3=0.000 w=0.9768/0.9730 ETA 0m (8.5s/step)
+[reinject_500] trained in 71.1 min -> /home/ubuntu/ablation_reinject_500.pt
+
+[reinject_500] paired eval vs base
+  taco_test     base=1.3391 model=1.2445 delta=-0.0946 [-0.1049,-0.0848] win=0.96
+  ood_pretrain  base=1.4378 model=1.3805 delta=-0.0573 [-0.0635,-0.0515] win=1.00
+  ood_func      base=1.1921 model=1.0167 delta=-0.1754 [-0.1948,-0.1568] win=0.99
+[reinject_500] HE-40: 26/40 (65.0%)
+saved /home/ubuntu/ablation_reinject_500_results.json

@@ -1,0 +1,36 @@
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Current Triton version 3.2.0 is below the recommended 3.3.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:   0%|          | 1/426 [00:00<00:45,  9.36it/s]Loading weights:  11%|█         | 45/426 [00:00<00:01, 255.61it/s]Loading weights:  22%|██▏       | 93/426 [00:00<00:00, 352.53it/s]Loading weights:  31%|███       | 133/426 [00:00<00:00, 367.80it/s]Loading weights:  42%|████▏     | 181/426 [00:00<00:00, 406.10it/s]Loading weights:  53%|█████▎    | 224/426 [00:00<00:00, 407.03it/s]Loading weights:  64%|██████▍   | 273/426 [00:00<00:00, 418.65it/s]Loading weights:  74%|███████▍  | 315/426 [00:00<00:00, 418.42it/s]Loading weights:  85%|████████▍ | 360/426 [00:00<00:00, 424.99it/s]Loading weights:  96%|█████████▌| 408/426 [00:01<00:00, 441.03it/s]Loading weights: 100%|██████████| 426/426 [00:01<00:00, 393.91it/s]
+[treatment] eval slices: {'taco_test': 150, 'ood_pretrain': 150, 'ood_func': 150}
+[treatment] data: {1: 4368, 2: 2730, 3: 1638}
+[treatment] trainable LoRA params: 111.7M (+64 gate scalars)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[treatment] S1 loss=1.6028 s1=1.326 s2=1.679 s3=2.215 lr=1.00e-06 gn=0.59 g2=0.964 g3=0.964 B2=0.001 B3=0.001 ETA 178m (21.4s/step)
+[treatment] S25 loss=1.3146 s1=1.438 s2=1.212 s3=1.156 lr=2.50e-05 gn=0.38 g2=0.964 g3=0.964 B2=0.072 B3=0.072 ETA 72m (9.1s/step)
+[treatment] S50 loss=1.0678 s1=1.066 s2=1.248 s3=0.773 lr=5.00e-05 gn=0.45 g2=0.964 g3=0.963 B2=0.189 B3=0.184 ETA 66m (8.8s/step)
+[treatment] S75 loss=1.2138 s1=1.425 s2=1.178 s3=0.711 lr=4.97e-05 gn=0.53 g2=0.964 g3=0.963 B2=0.303 B3=0.289 ETA 62m (8.7s/step)
+[treatment] S100 loss=1.1234 s1=1.464 s2=0.939 s3=0.524 lr=4.86e-05 gn=0.37 g2=0.963 g3=0.963 B2=0.397 B3=0.378 ETA 58m (8.7s/step)
+[treatment] S125 loss=0.9816 s1=1.053 s2=1.207 s3=0.416 lr=4.70e-05 gn=0.42 g2=0.963 g3=0.962 B2=0.469 B3=0.458 ETA 54m (8.6s/step)
+[treatment] S150 loss=1.2108 s1=1.411 s2=1.136 s3=0.803 lr=4.47e-05 gn=0.45 g2=0.963 g3=0.962 B2=0.530 B3=0.521 ETA 50m (8.6s/step)
+[treatment] S175 loss=1.1699 s1=1.330 s2=1.370 s3=0.409 lr=4.20e-05 gn=0.44 g2=0.963 g3=0.962 B2=0.578 B3=0.567 ETA 47m (8.6s/step)
+[treatment] S200 loss=1.0954 s1=1.308 s2=1.079 s3=0.556 lr=3.87e-05 gn=0.57 g2=0.963 g3=0.962 B2=0.615 B3=0.607 ETA 43m (8.6s/step)
+[treatment] S225 loss=1.2058 s1=1.455 s2=1.205 s3=0.543 lr=3.52e-05 gn=0.47 g2=0.963 g3=0.962 B2=0.648 B3=0.642 ETA 39m (8.6s/step)
+[treatment] S250 loss=0.9782 s1=1.226 s2=0.947 s3=0.368 lr=3.14e-05 gn=0.43 g2=0.963 g3=0.962 B2=0.674 B3=0.665 ETA 36m (8.6s/step)
+[treatment] S275 loss=1.0146 s1=1.293 s2=0.818 s3=0.599 lr=2.75e-05 gn=0.40 g2=0.963 g3=0.962 B2=0.694 B3=0.685 ETA 32m (8.6s/step)
+[treatment] S300 loss=0.9750 s1=1.146 s2=0.938 s3=0.579 lr=2.36e-05 gn=0.40 g2=0.963 g3=0.962 B2=0.709 B3=0.698 ETA 29m (8.6s/step)
+[treatment] S325 loss=0.9500 s1=1.040 s2=1.056 s3=0.535 lr=1.98e-05 gn=0.50 g2=0.963 g3=0.962 B2=0.717 B3=0.708 ETA 25m (8.6s/step)
+[treatment] S350 loss=1.0810 s1=1.502 s2=0.841 s3=0.359 lr=1.63e-05 gn=0.42 g2=0.963 g3=0.962 B2=0.723 B3=0.713 ETA 21m (8.6s/step)
+[treatment] S375 loss=0.8889 s1=0.971 s2=0.990 s3=0.502 lr=1.30e-05 gn=0.47 g2=0.963 g3=0.962 B2=0.727 B3=0.718 ETA 18m (8.6s/step)
+[treatment] S400 loss=1.1313 s1=1.293 s2=1.181 s3=0.619 lr=1.03e-05 gn=0.58 g2=0.963 g3=0.962 B2=0.729 B3=0.722 ETA 14m (8.6s/step)
+[treatment] S425 loss=0.9555 s1=1.262 s2=0.641 s3=0.664 lr=8.01e-06 gn=0.52 g2=0.963 g3=0.962 B2=0.731 B3=0.724 ETA 11m (8.6s/step)
+[treatment] S450 loss=1.0605 s1=1.044 s2=1.418 s3=0.509 lr=6.36e-06 gn=0.49 g2=0.963 g3=0.962 B2=0.731 B3=0.724 ETA 7m (8.6s/step)
+[treatment] S475 loss=0.9909 s1=1.271 s2=0.811 s3=0.543 lr=5.34e-06 gn=0.39 g2=0.963 g3=0.962 B2=0.732 B3=0.725 ETA 4m (8.6s/step)
+[treatment] S500 loss=1.1388 s1=1.096 s2=1.239 s3=1.086 lr=5.00e-06 gn=0.46 g2=0.963 g3=0.961 B2=0.732 B3=0.725 ETA 0m (8.6s/step)
+[treatment] trained in 71.6 min -> /home/ubuntu/ablation_treatment_step500.pt
+
+[treatment] paired eval vs base
+  taco_test     base=1.3391 model=1.4143 delta=+0.0753 [+0.0632,+0.0882] win=0.12
+  ood_pretrain  base=1.4378 model=1.4634 delta=+0.0256 [+0.0192,+0.0324] win=0.21
+  ood_func      base=1.1921 model=1.0959 delta=-0.0962 [-0.1169,-0.0759] win=0.75
+[treatment] HE-40: 29/40 (72.5%)
+saved /home/ubuntu/ablation_treatment_results.json

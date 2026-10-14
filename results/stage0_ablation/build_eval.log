@@ -1,0 +1,20 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  decontam: 43497 13-grams indexed from HumanEval-164 + MBPP
+[stream 1] general Python replay
+Repo card metadata block was not found. Setting CardData to empty.
+  loaded codeparrot/codeparrot-clean-train {'split': 'train', 'streaming': True}
+Repo card metadata block was not found. Setting CardData to empty.
+  loaded codeparrot/codeparrot-clean-valid {'split': 'train', 'streaming': True}
+  stream1: 0 train windows, 150 eval windows
+[stream 2] clean docstring functions
+Generating train split:   0%|          | 0/455243 [00:00<?, ? examples/s]Generating train split:   2%|▏         | 10000/455243 [00:00<00:05, 86731.21 examples/s]Generating train split:   6%|▌         | 26000/455243 [00:00<00:03, 121674.99 examples/s]Generating train split:  10%|▉         | 44000/455243 [00:00<00:02, 144299.04 examples/s]Generating train split:  13%|█▎        | 59000/455243 [00:00<00:02, 144219.55 examples/s]Generating train split:  16%|█▋        | 75000/455243 [00:00<00:02, 146028.91 examples/s]Generating train split:  21%|██▏       | 97000/455243 [00:00<00:02, 162009.43 examples/s]Generating train split:  25%|██▌       | 114811/455243 [00:00<00:02, 156088.55 examples/s]Generating train split:  30%|███       | 137811/455243 [00:00<00:01, 175189.61 examples/s]Generating train split:  34%|███▍      | 156811/455243 [00:00<00:01, 175611.75 examples/s]Generating train split:  40%|████      | 182811/455243 [00:01<00:01, 173223.25 examples/s]Generating train split:  44%|████▍     | 200811/455243 [00:01<00:01, 173380.15 examples/s]Generating train split:  49%|████▊     | 221811/455243 [00:01<00:01, 178886.96 examples/s]Generating train split:  54%|█████▍    | 247622/455243 [00:01<00:01, 169105.29 examples/s]Generating train split:  59%|█████▉    | 268622/455243 [00:01<00:01, 174857.90 examples/s]Generating train split:  63%|██████▎   | 287622/455243 [00:01<00:00, 172229.36 examples/s]Generating train split:  69%|██████▉   | 313622/455243 [00:01<00:00, 169606.00 examples/s]Generating train split:  74%|███████▍  | 338622/455243 [00:02<00:00, 166646.28 examples/s]Generating train split:  80%|███████▉  | 362433/455243 [00:02<00:00, 161216.25 examples/s]Generating train split:  83%|████████▎ | 379433/455243 [00:02<00:00, 161170.06 examples/s]Generating train split:  89%|████████▉ | 405433/455243 [00:02<00:00, 163539.19 examples/s]Generating train split:  93%|█████████▎| 423433/455243 [00:02<00:00, 165603.22 examples/s]Generating train split:  97%|█████████▋| 442433/455243 [00:02<00:00, 168174.09 examples/s]Generating train split: 100%|██████████| 455243/455243 [00:02<00:00, 164606.01 examples/s]
+  loaded Nan-Do/code-search-net-python {'split': 'train'}
+  stream2: 0 train, 150 eval
+  taco_test: 150 docs
+
+=== Phase D data written: /home/ubuntu/phase_d_data.pt ===
+  stream1: 0 (0.0%)
+  stream2: 0 (0.0%)
+  stream3: 0 (0.0%)
+  eval: taco=150 ood_pretrain=150 ood_func=150 he=164 mbpp=100
+  decontam collisions dropped: 4
