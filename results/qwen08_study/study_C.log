@@ -1,0 +1,101 @@
+/opt/pytorch/lib/python3.12/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  48%|████▊     | 153/320 [00:00<00:00, 1517.14it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 1738.37it/s]
+[q08_C_3662] Qwen/Qwen3.5-0.8B layers=24 core=6..17 steps=3662 tokens/step=8192
+[q08_C_3662] train={1: 10584, 2: 6615, 3: 3969} eval={'taco_test': 150, 'ood_pretrain': 150, 'ood_func': 150}
+[q08_C_3662] trainable params: 286.4M in groups ['core', 'mix']
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[q08_C_3662] step-0 CE_L1=1.1892 CE_L2=1.1898 CE_L3=1.1904
+[q08_C_3662] S1/3662 T=2 loss=1.4709 ce1=1.472 ce2=1.471 lr=9.17e-08 gn=5.56 w=0.9900/0.9900 ETA 332m (5.44s/step)
+[q08_C_3662] S50/3662 T=2 loss=1.3184 ce1=1.330 ce2=1.318 lr=4.59e-06 gn=5.02 w=0.9895/0.9900 ETA 320m (5.31s/step)
+[q08_C_3662] S100/3662 T=2 loss=1.5045 ce1=1.519 ce2=1.505 lr=9.17e-06 gn=4.82 w=0.9877/0.9900 ETA 315m (5.31s/step)
+[q08_C_3662] S150/3662 T=2 loss=1.4719 ce1=1.483 ce2=1.472 lr=1.00e-05 gn=4.68 w=0.9852/0.9900 ETA 311m (5.31s/step)
+[q08_C_3662] S200/3662 T=2 loss=1.5040 ce1=1.517 ce2=1.504 lr=9.99e-06 gn=4.79 w=0.9814/0.9900 ETA 306m (5.31s/step)
+[q08_C_3662] S250 ramp: opening T=3 (probe CE2-CE1=-0.0375)
+[q08_C_3662] S250/3662 T=3 loss=1.6468 ce1=1.666 ce2=1.647 lr=9.97e-06 gn=4.80 w=0.9782/0.9900 ETA 304m (5.34s/step)
+[q08_C_3662] S300/3662 T=3 loss=1.5726 ce1=1.585 ce2=1.573 ce3=1.572 lr=9.94e-06 gn=5.13 w=0.9753/0.9811 ETA 326m (5.81s/step)
+[q08_C_3662] S350/3662 T=3 loss=1.1876 ce1=1.203 ce2=1.188 ce3=1.188 lr=9.90e-06 gn=4.13 w=0.9727/0.9729 ETA 340m (6.15s/step)
+[q08_C_3662] S400/3662 T=3 loss=1.1456 ce1=1.160 ce2=1.146 ce3=1.146 lr=9.85e-06 gn=4.12 w=0.9700/0.9691 ETA 348m (6.41s/step)
+[q08_C_3662] S450/3662 T=3 loss=1.4726 ce1=1.481 ce2=1.473 ce3=1.472 lr=9.80e-06 gn=4.76 w=0.9687/0.9671 ETA 354m (6.61s/step)
+[q08_C_3662] S500/3662 T=3 loss=1.2118 ce1=1.228 ce2=1.212 ce3=1.212 lr=9.73e-06 gn=4.57 w=0.9670/0.9677 ETA 356m (6.76s/step)
+[q08_C_3662] S550/3662 T=3 loss=1.3701 ce1=1.391 ce2=1.370 ce3=1.370 lr=9.66e-06 gn=4.92 w=0.9653/0.9648 ETA 358m (6.89s/step)
+[q08_C_3662] S600/3662 T=3 loss=1.1767 ce1=1.207 ce2=1.177 ce3=1.176 lr=9.58e-06 gn=4.45 w=0.9646/0.9641 ETA 357m (7.00s/step)
+[q08_C_3662] S650/3662 T=3 loss=1.4559 ce1=1.467 ce2=1.456 ce3=1.456 lr=9.49e-06 gn=4.54 w=0.9626/0.9622 ETA 356m (7.09s/step)
+[q08_C_3662] S700/3662 T=3 loss=1.4067 ce1=1.418 ce2=1.406 ce3=1.407 lr=9.40e-06 gn=4.96 w=0.9619/0.9621 ETA 354m (7.17s/step)
+[q08_C_3662] S750/3662 T=3 loss=1.3553 ce1=1.382 ce2=1.355 ce3=1.355 lr=9.30e-06 gn=5.03 w=0.9624/0.9625 ETA 351m (7.24s/step)
+[q08_C_3662] S800/3662 T=3 loss=1.2485 ce1=1.269 ce2=1.249 ce3=1.248 lr=9.19e-06 gn=4.61 w=0.9615/0.9619 ETA 348m (7.30s/step)
+[q08_C_3662] S850/3662 T=3 loss=1.3584 ce1=1.380 ce2=1.358 ce3=1.359 lr=9.07e-06 gn=4.53 w=0.9587/0.9587 ETA 345m (7.35s/step)
+[q08_C_3662] S900/3662 T=3 loss=1.3474 ce1=1.388 ce2=1.347 ce3=1.347 lr=8.94e-06 gn=4.73 w=0.9582/0.9587 ETA 341m (7.40s/step)
+[q08_C_3662] S950/3662 T=3 loss=1.4938 ce1=1.507 ce2=1.494 ce3=1.494 lr=8.81e-06 gn=4.99 w=0.9579/0.9585 ETA 336m (7.44s/step)
+[q08_C_3662] S1000/3662 T=3 loss=1.3309 ce1=1.355 ce2=1.331 ce3=1.331 lr=8.67e-06 gn=4.51 w=0.9583/0.9591 ETA 332m (7.48s/step)
+    HE 40/40 passed=17
+[q08_C_3662] EVAL S1000: nll_taco=1.5477 | nll_ood_pretrain=1.6528 | nll_ood_func=1.3376 | he40=42.5000 | a_min_abs=0.0000 | g2_mean=0.0000 | g3_mean=0.0000 | B2_l0=0.2366 | B3_l0=0.0000
+[q08_C_3662] S1050/3662 T=3 loss=1.5334 ce1=1.557 ce2=1.534 ce3=1.533 lr=8.53e-06 gn=4.59 w=0.9585/0.9586 ETA 339m (7.79s/step)
+[q08_C_3662] S1100/3662 T=3 loss=1.4673 ce1=1.483 ce2=1.467 ce3=1.467 lr=8.38e-06 gn=4.85 w=0.9589/0.9591 ETA 333m (7.81s/step)
+[q08_C_3662] S1150/3662 T=3 loss=1.4124 ce1=1.434 ce2=1.413 ce3=1.412 lr=8.22e-06 gn=5.50 w=0.9583/0.9584 ETA 328m (7.83s/step)
+[q08_C_3662] S1200/3662 T=3 loss=1.4079 ce1=1.457 ce2=1.409 ce3=1.407 lr=8.06e-06 gn=5.01 w=0.9582/0.9582 ETA 322m (7.84s/step)
+[q08_C_3662] S1250/3662 T=3 loss=1.3097 ce1=1.331 ce2=1.310 ce3=1.309 lr=7.90e-06 gn=4.26 w=0.9566/0.9564 ETA 316m (7.86s/step)
+[q08_C_3662] S1300/3662 T=3 loss=1.2813 ce1=1.323 ce2=1.283 ce3=1.281 lr=7.73e-06 gn=4.83 w=0.9565/0.9565 ETA 310m (7.87s/step)
+[q08_C_3662] S1350/3662 T=3 loss=1.0745 ce1=1.112 ce2=1.075 ce3=1.074 lr=7.55e-06 gn=4.63 w=0.9578/0.9579 ETA 304m (7.88s/step)
+[q08_C_3662] S1400/3662 T=3 loss=1.3172 ce1=1.350 ce2=1.317 ce3=1.317 lr=7.37e-06 gn=4.88 w=0.9592/0.9588 ETA 298m (7.89s/step)
+[q08_C_3662] S1450/3662 T=3 loss=1.2432 ce1=1.296 ce2=1.244 ce3=1.243 lr=7.19e-06 gn=4.92 w=0.9597/0.9589 ETA 291m (7.90s/step)
+[q08_C_3662] S1500/3662 T=3 loss=1.1883 ce1=1.231 ce2=1.189 ce3=1.188 lr=7.00e-06 gn=4.83 w=0.9588/0.9568 ETA 285m (7.91s/step)
+[q08_C_3662] S1550/3662 T=3 loss=1.1069 ce1=1.136 ce2=1.107 ce3=1.107 lr=6.82e-06 gn=4.58 w=0.9590/0.9565 ETA 279m (7.92s/step)
+[q08_C_3662] S1600/3662 T=3 loss=1.4417 ce1=1.469 ce2=1.442 ce3=1.441 lr=6.62e-06 gn=4.83 w=0.9591/0.9565 ETA 273m (7.93s/step)
+[q08_C_3662] S1650/3662 T=3 loss=1.5840 ce1=1.620 ce2=1.584 ce3=1.584 lr=6.43e-06 gn=5.06 w=0.9589/0.9552 ETA 266m (7.94s/step)
+[q08_C_3662] S1700/3662 T=3 loss=1.3997 ce1=1.438 ce2=1.400 ce3=1.400 lr=6.23e-06 gn=5.13 w=0.9592/0.9556 ETA 260m (7.95s/step)
+[q08_C_3662] S1750/3662 T=3 loss=1.3700 ce1=1.404 ce2=1.371 ce3=1.370 lr=6.04e-06 gn=5.46 w=0.9586/0.9550 ETA 254m (7.96s/step)
+[q08_C_3662] S1800/3662 T=3 loss=1.2877 ce1=1.318 ce2=1.288 ce3=1.288 lr=5.84e-06 gn=5.00 w=0.9590/0.9559 ETA 247m (7.96s/step)
+[q08_C_3662] S1850/3662 T=3 loss=1.1705 ce1=1.211 ce2=1.172 ce3=1.170 lr=5.64e-06 gn=4.73 w=0.9589/0.9550 ETA 241m (7.97s/step)
+[q08_C_3662] S1900/3662 T=3 loss=1.3487 ce1=1.413 ce2=1.350 ce3=1.348 lr=5.44e-06 gn=5.22 w=0.9590/0.9551 ETA 234m (7.98s/step)
+[q08_C_3662] S1950/3662 T=3 loss=0.9718 ce1=1.009 ce2=0.972 ce3=0.972 lr=5.24e-06 gn=4.15 w=0.9587/0.9547 ETA 228m (7.98s/step)
+[q08_C_3662] S2000/3662 T=3 loss=1.3106 ce1=1.346 ce2=1.311 ce3=1.310 lr=5.05e-06 gn=4.66 w=0.9590/0.9554 ETA 221m (7.99s/step)
+    HE 40/40 passed=15
+[q08_C_3662] EVAL S2000: nll_taco=1.5504 | nll_ood_pretrain=1.6519 | nll_ood_func=1.3372 | he40=37.5000 | a_min_abs=0.0000 | g2_mean=0.0000 | g3_mean=0.0000 | B2_l0=0.3024 | B3_l0=0.0000
+>>> saved /home/ubuntu/q08_C_3662_step2000.pt (789.7M params)
+[q08_C_3662] S2050/3662 T=3 loss=1.5092 ce1=1.542 ce2=1.509 ce3=1.509 lr=4.85e-06 gn=5.13 w=0.9586/0.9547 ETA 219m (8.14s/step)
+[q08_C_3662] S2100/3662 T=3 loss=1.3098 ce1=1.347 ce2=1.310 ce3=1.310 lr=4.65e-06 gn=5.14 w=0.9587/0.9551 ETA 212m (8.14s/step)
+[q08_C_3662] S2150/3662 T=3 loss=1.0954 ce1=1.146 ce2=1.096 ce3=1.095 lr=4.46e-06 gn=4.75 w=0.9587/0.9549 ETA 205m (8.14s/step)
+[q08_C_3662] S2200/3662 T=3 loss=1.3020 ce1=1.334 ce2=1.303 ce3=1.302 lr=4.26e-06 gn=5.10 w=0.9589/0.9551 ETA 198m (8.14s/step)
+[q08_C_3662] S2250/3662 T=3 loss=1.4296 ce1=1.474 ce2=1.430 ce3=1.429 lr=4.07e-06 gn=5.09 w=0.9589/0.9552 ETA 192m (8.14s/step)
+[q08_C_3662] S2300/3662 T=3 loss=1.1535 ce1=1.189 ce2=1.154 ce3=1.153 lr=3.89e-06 gn=4.42 w=0.9589/0.9550 ETA 185m (8.15s/step)
+[q08_C_3662] S2350/3662 T=3 loss=1.4801 ce1=1.536 ce2=1.481 ce3=1.480 lr=3.70e-06 gn=5.20 w=0.9590/0.9550 ETA 178m (8.15s/step)
+[q08_C_3662] S2400/3662 T=3 loss=1.1359 ce1=1.187 ce2=1.136 ce3=1.136 lr=3.52e-06 gn=5.14 w=0.9589/0.9550 ETA 171m (8.15s/step)
+[q08_C_3662] S2450/3662 T=3 loss=1.2396 ce1=1.284 ce2=1.241 ce3=1.239 lr=3.35e-06 gn=4.83 w=0.9584/0.9546 ETA 165m (8.15s/step)
+[q08_C_3662] S2500/3662 T=3 loss=1.0839 ce1=1.142 ce2=1.084 ce3=1.084 lr=3.17e-06 gn=5.06 w=0.9589/0.9552 ETA 158m (8.15s/step)
+[q08_C_3662] S2550/3662 T=3 loss=1.2277 ce1=1.267 ce2=1.228 ce3=1.227 lr=3.01e-06 gn=4.72 w=0.9590/0.9551 ETA 151m (8.15s/step)
+[q08_C_3662] S2600/3662 T=3 loss=1.3220 ce1=1.362 ce2=1.322 ce3=1.322 lr=2.84e-06 gn=5.33 w=0.9590/0.9550 ETA 144m (8.15s/step)
+[q08_C_3662] S2650/3662 T=3 loss=1.2287 ce1=1.288 ce2=1.230 ce3=1.228 lr=2.68e-06 gn=4.69 w=0.9588/0.9549 ETA 138m (8.15s/step)
+[q08_C_3662] S2700/3662 T=3 loss=0.9976 ce1=1.045 ce2=0.999 ce3=0.997 lr=2.53e-06 gn=4.53 w=0.9590/0.9551 ETA 131m (8.15s/step)
+[q08_C_3662] S2750/3662 T=3 loss=1.3581 ce1=1.394 ce2=1.359 ce3=1.358 lr=2.39e-06 gn=4.92 w=0.9590/0.9551 ETA 124m (8.15s/step)
+[q08_C_3662] S2800/3662 T=3 loss=1.3151 ce1=1.366 ce2=1.316 ce3=1.315 lr=2.25e-06 gn=4.82 w=0.9589/0.9549 ETA 117m (8.16s/step)
+[q08_C_3662] S2850/3662 T=3 loss=1.4902 ce1=1.541 ce2=1.491 ce3=1.490 lr=2.11e-06 gn=5.28 w=0.9590/0.9550 ETA 110m (8.16s/step)
+[q08_C_3662] S2900/3662 T=3 loss=1.3637 ce1=1.412 ce2=1.364 ce3=1.364 lr=1.98e-06 gn=5.28 w=0.9590/0.9550 ETA 104m (8.16s/step)
+[q08_C_3662] S2950/3662 T=3 loss=1.3347 ce1=1.373 ce2=1.334 ce3=1.335 lr=1.86e-06 gn=4.95 w=0.9590/0.9551 ETA 97m (8.16s/step)
+[q08_C_3662] S3000/3662 T=3 loss=1.4588 ce1=1.521 ce2=1.460 ce3=1.458 lr=1.75e-06 gn=5.30 w=0.9590/0.9551 ETA 90m (8.16s/step)
+    HE 40/40 passed=16
+[q08_C_3662] EVAL S3000: nll_taco=1.5514 | nll_ood_pretrain=1.6537 | nll_ood_func=1.3377 | he40=40.0000 | a_min_abs=0.0000 | g2_mean=0.0000 | g3_mean=0.0000 | B2_l0=0.3092 | B3_l0=0.0000
+[q08_C_3662] S3050/3662 T=3 loss=1.4818 ce1=1.524 ce2=1.482 ce3=1.482 lr=1.64e-06 gn=5.70 w=0.9591/0.9551 ETA 84m (8.26s/step)
+[q08_C_3662] S3100/3662 T=3 loss=1.3170 ce1=1.369 ce2=1.319 ce3=1.316 lr=1.54e-06 gn=4.98 w=0.9590/0.9551 ETA 77m (8.26s/step)
+[q08_C_3662] S3150/3662 T=3 loss=1.4980 ce1=1.546 ce2=1.499 ce3=1.498 lr=1.45e-06 gn=5.13 w=0.9590/0.9551 ETA 70m (8.25s/step)
+[q08_C_3662] S3200/3662 T=3 loss=1.6366 ce1=1.682 ce2=1.637 ce3=1.636 lr=1.37e-06 gn=5.15 w=0.9590/0.9551 ETA 64m (8.25s/step)
+[q08_C_3662] S3250/3662 T=3 loss=1.2030 ce1=1.250 ce2=1.204 ce3=1.203 lr=1.30e-06 gn=4.42 w=0.9590/0.9550 ETA 57m (8.25s/step)
+[q08_C_3662] S3300/3662 T=3 loss=1.2259 ce1=1.269 ce2=1.226 ce3=1.226 lr=1.23e-06 gn=4.78 w=0.9590/0.9549 ETA 50m (8.25s/step)
+[q08_C_3662] S3350/3662 T=3 loss=1.0727 ce1=1.120 ce2=1.073 ce3=1.072 lr=1.17e-06 gn=4.61 w=0.9589/0.9549 ETA 43m (8.25s/step)
+[q08_C_3662] S3400/3662 T=3 loss=1.4099 ce1=1.459 ce2=1.410 ce3=1.410 lr=1.12e-06 gn=5.28 w=0.9590/0.9550 ETA 36m (8.25s/step)
+[q08_C_3662] S3450/3662 T=3 loss=1.2134 ce1=1.284 ce2=1.214 ce3=1.213 lr=1.08e-06 gn=5.04 w=0.9590/0.9550 ETA 29m (8.25s/step)
+[q08_C_3662] S3500/3662 T=3 loss=1.5615 ce1=1.605 ce2=1.563 ce3=1.561 lr=1.05e-06 gn=5.31 w=0.9590/0.9551 ETA 22m (8.25s/step)
+[q08_C_3662] S3550/3662 T=3 loss=1.4049 ce1=1.450 ce2=1.406 ce3=1.404 lr=1.02e-06 gn=4.71 w=0.9589/0.9550 ETA 15m (8.25s/step)
+[q08_C_3662] S3600/3662 T=3 loss=1.2189 ce1=1.256 ce2=1.220 ce3=1.218 lr=1.01e-06 gn=5.12 w=0.9590/0.9551 ETA 9m (8.25s/step)
+[q08_C_3662] S3650/3662 T=3 loss=1.4094 ce1=1.450 ce2=1.410 ce3=1.409 lr=1.00e-06 gn=4.88 w=0.9590/0.9551 ETA 2m (8.25s/step)
+>>> saved /home/ubuntu/q08_C_3662_step3662.pt (789.7M params)
+[q08_C_3662] trained in 503.4 min; ramp opened at 250
+
+[q08_C_3662] paired eval vs base
+  taco_test     base=1.5621 model=1.5602 delta=-0.0018 [-0.0044,+0.0007] win=0.54
+  ood_pretrain  base=1.6588 model=1.6537 delta=-0.0051 [-0.0072,-0.0030] win=0.71
+  ood_func      base=1.3284 model=1.3090 delta=-0.0195 [-0.0248,-0.0142] win=0.75
+[q08_C_3662] HE-164: 30/164 (18.3%)
+saved q08_C_3662_results.json

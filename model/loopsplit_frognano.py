@@ -44,6 +44,16 @@ class CoreLoopLoRALayer(nn.Module):
         return base_out
 
 
+def _text_backbone(hf_model):
+    """Resolve the decoder stack (.layers/.embed_tokens/.norm/.rotary_emb) across HF wrappers:
+    Qwen3_5ForCausalLM.model, or Qwen3_5ForConditionalGeneration.model.language_model."""
+    m = getattr(hf_model, "model", hf_model)
+    if not hasattr(m, "layers") and hasattr(m, "language_model"):
+        m = m.language_model
+    assert hasattr(m, "layers"), "could not locate decoder layers on hf_model"
+    return m
+
+
 class LoopSplitFrogNano(nn.Module):
     """
     LoopSplit FrogNano with State-Routed 3-Pass Recursive Core:
@@ -74,8 +84,26 @@ class LoopSplitFrogNano(nn.Module):
           (plain layer calls on every loop) and loops 2/3 share LoRA_2. Loop 1 remains the exact base model.
         """
         super().__init__()
-        assert entry_mode in ("none", "reinject")
+        self.backbone = _text_backbone(hf_model)
+        assert entry_mode in ("none", "reinject", "concat")
         self.entry_mode = entry_mode
+        if entry_mode == "concat":
+            # arXiv:2511.07384: u_t = RMSNorm(W [h_{t-1} ; p]).  A dense 2d x d W under Adam drifts by ~lr per entry per
+            # step from init regardless of gradient (observed: offdiag rms 0.023 after 30 steps -> CE +1.5). So W is
+            # parametrized as  W = [alpha*I | beta*I] + B A  with alpha=entry_init, beta=1, A,B low-rank (B zero-init).
+            bb = _text_backbone(hf_model)
+            d = bb.config.hidden_size
+            dt = bb.embed_tokens.weight.dtype
+            r = 64
+            self.concat_alpha = nn.Parameter(torch.full((1,), float(entry_init), dtype=torch.float32))  # gain on h
+            self.concat_beta = nn.Parameter(torch.ones(1, dtype=torch.float32))                          # gain on p
+            self.concat_A = nn.Parameter(torch.empty(r, 2 * d, dtype=dt))
+            self.concat_B = nn.Parameter(torch.zeros(d, r, dtype=dt))
+            nn.init.kaiming_uniform_(self.concat_A, a=math.sqrt(5))
+            self.concat_bias = nn.Parameter(torch.zeros(d, dtype=dt))
+            self.concat_norm = nn.RMSNorm(d, eps=getattr(bb.config, "rms_norm_eps", 1e-6), dtype=dt)
+            self.concat_scale = nn.Parameter(torch.ones(1, dtype=torch.float32))
+            self._concat_scale_set = False
         if entry_mode == "reinject":
             a0 = math.log(entry_init / (1.0 - entry_init))
             self.entry_mix = nn.Parameter(torch.full((2,), a0, dtype=torch.float32))  # a_2, a_3
@@ -83,7 +111,7 @@ class LoopSplitFrogNano(nn.Module):
         self.model = hf_model
         self.core_start = core_start
         self.core_end = core_end
-        self.num_layers = len(hf_model.model.layers)
+        self.num_layers = len(self.backbone.layers)
         self.lora_layers = []
         self.gate_mode = gate_mode
         self.boundary_adapter = boundary_adapter
@@ -97,9 +125,9 @@ class LoopSplitFrogNano(nn.Module):
         self.a3_mlp = nn.Parameter(torch.zeros(num_core, dtype=torch.float32))
 
         if boundary_adapter:
-            hidden = hf_model.config.hidden_size
-            dtype = hf_model.model.embed_tokens.weight.dtype
-            eps = getattr(hf_model.config, "rms_norm_eps", 1e-6)
+            hidden = self.backbone.config.hidden_size
+            dtype = self.backbone.embed_tokens.weight.dtype
+            eps = getattr(self.backbone.config, "rms_norm_eps", 1e-6)
             self.loop_norm = nn.RMSNorm(hidden, eps=eps, dtype=dtype)
             self.loop_proj = nn.Linear(hidden, hidden, bias=True, dtype=dtype)
             with torch.no_grad():
@@ -120,7 +148,7 @@ class LoopSplitFrogNano(nn.Module):
 
     def _wrap_core_lora(self, lora_rank):
         for layer_idx in range(self.core_start, self.core_end):
-            layer = self.model.model.layers[layer_idx]
+            layer = self.backbone.layers[layer_idx]
             if hasattr(layer, "self_attn"):
                 attn = layer.self_attn
                 for proj_name in ["q_proj", "k_proj", "v_proj", "o_proj"]:
@@ -151,7 +179,7 @@ class LoopSplitFrogNano(nn.Module):
             l.active_loop = loop_idx
 
     def _run_core_layer(self, layer, hidden_states, position_embeddings, attention_mask, position_ids, loop_idx, core_idx, fixed_gate=None):
-        if loop_idx == 1 or self.entry_mode == "reinject":
+        if loop_idx == 1 or self.entry_mode in ("reinject", "concat"):
             return layer(
                 hidden_states=hidden_states,
                 position_embeddings=position_embeddings,
@@ -204,7 +232,7 @@ class LoopSplitFrogNano(nn.Module):
         """
         assert not (single_pass_lora and num_loops != 1), "single_pass_lora requires num_loops=1"
         batch_size, seq_len = input_ids.shape
-        inputs_embeds = self.model.model.embed_tokens(input_ids)
+        inputs_embeds = self.backbone.embed_tokens(input_ids)
         
         position_ids = torch.arange(seq_len, device=input_ids.device)
         position_ids = position_ids.view(1, 1, -1).expand(4, batch_size, -1)
@@ -213,7 +241,7 @@ class LoopSplitFrogNano(nn.Module):
         
         from transformers.models.qwen3_5.modeling_qwen3_5 import create_causal_mask, create_recurrent_attention_mask
         mask_kwargs = {
-            "config": self.model.model.config,
+            "config": self.backbone.config,
             "inputs_embeds": inputs_embeds,
             "attention_mask": None,
             "past_key_values": None,
@@ -225,12 +253,12 @@ class LoopSplitFrogNano(nn.Module):
         }
         
         hidden_states = inputs_embeds
-        position_embeddings = self.model.model.rotary_emb(hidden_states, extra_position_ids)
+        position_embeddings = self.backbone.rotary_emb(hidden_states, extra_position_ids)
         
         # 1. Prelude (Layers 0..7)
         for i in range(0, self.core_start):
-            layer = self.model.model.layers[i]
-            mask = causal_mask_mapping[self.model.model.config.layer_types[i]]
+            layer = self.backbone.layers[i]
+            mask = causal_mask_mapping[self.backbone.config.layer_types[i]]
             hidden_states = layer(
                 hidden_states=hidden_states,
                 position_embeddings=position_embeddings,
@@ -243,21 +271,31 @@ class LoopSplitFrogNano(nn.Module):
         
         # 2. Core Loops (Layers 8..23)
         for loop_idx in range(1, num_loops + 1):
-            if single_pass_lora or (self.entry_mode == "reinject" and loop_idx >= 2):
+            if single_pass_lora or (self.entry_mode in ("reinject", "concat") and loop_idx >= 2):
                 self.set_active_loop(2)   # shared LoRA_2 on every non-base pass
             else:
                 self.set_active_loop(loop_idx)  # Explicitly route LoRA branches!
             if self.entry_mode == "reinject" and loop_idx >= 2:
                 w = torch.sigmoid(self.entry_mix[loop_idx - 2]).to(hidden_states.dtype)
                 hidden_states = w * prelude_out + (1 - w) * hidden_states
+            elif self.entry_mode == "concat" and loop_idx >= 2:
+                if not self._concat_scale_set:
+                    with torch.no_grad():
+                        self.concat_scale.fill_(prelude_out.float().pow(2).mean().sqrt().item())
+                    self._concat_scale_set = True
+                cat = torch.cat([hidden_states, prelude_out], dim=-1)
+                u = (self.concat_alpha.to(hidden_states.dtype) * hidden_states
+                     + self.concat_beta.to(hidden_states.dtype) * prelude_out
+                     + F.linear(F.linear(cat, self.concat_A), self.concat_B) + self.concat_bias)
+                hidden_states = self.concat_norm(u) * self.concat_scale.to(u.dtype)
             if self.boundary_adapter and loop_idx >= 2:
                 k = loop_idx - 2
                 mapped = self.loop_proj(self.loop_norm(hidden_states)) + self.loop_step_emb[k]
                 hidden_states = hidden_states + self.loop_gate[k].to(hidden_states.dtype) * mapped
             for i in range(self.core_start, self.core_end):
-                layer = self.model.model.layers[i]
+                layer = self.backbone.layers[i]
                 core_idx = i - self.core_start
-                mask = causal_mask_mapping[self.model.model.config.layer_types[i]]
+                mask = causal_mask_mapping[self.backbone.config.layer_types[i]]
                 hidden_states = self._run_core_layer(
                     layer,
                     hidden_states,
@@ -272,20 +310,20 @@ class LoopSplitFrogNano(nn.Module):
             if return_all_readouts:
                 coda_h = hidden_states
                 for j in range(self.core_end, self.num_layers):
-                    coda_mask = causal_mask_mapping[self.model.model.config.layer_types[j]]
-                    coda_h = self.model.model.layers[j](
+                    coda_mask = causal_mask_mapping[self.backbone.config.layer_types[j]]
+                    coda_h = self.backbone.layers[j](
                         hidden_states=coda_h,
                         position_embeddings=position_embeddings,
                         attention_mask=coda_mask,
                         position_ids=text_position_ids,
                     )
-                normed_final = self.model.model.norm(coda_h)
+                normed_final = self.backbone.norm(coda_h)
                 readouts[f"logits_loop_{loop_idx}"] = self.model.lm_head(normed_final)
 
         # 3. Coda (Layers 24..31)
         for i in range(self.core_end, self.num_layers):
-            layer = self.model.model.layers[i]
-            mask = causal_mask_mapping[self.model.model.config.layer_types[i]]
+            layer = self.backbone.layers[i]
+            mask = causal_mask_mapping[self.backbone.config.layer_types[i]]
             hidden_states = layer(
                 hidden_states=hidden_states,
                 position_embeddings=position_embeddings,
@@ -293,7 +331,7 @@ class LoopSplitFrogNano(nn.Module):
                 position_ids=text_position_ids,
             )
             
-        final_normed = self.model.model.norm(hidden_states)
+        final_normed = self.backbone.norm(hidden_states)
         final_logits = self.model.lm_head(final_normed)
         
         # Reset to base pass

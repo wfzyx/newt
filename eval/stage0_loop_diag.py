@@ -22,6 +22,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from model.loopsplit_frognano import LoopSplitFrogNano
 from eval import phase_d_harness as H
+from model.presets import CORE_START, CORE_END, LORA_RANK
 
 NEWT_HOME = os.environ.get("NEWT_HOME", "/home/ubuntu")
 DEVICE = H.DEVICE
@@ -76,7 +77,7 @@ def main():
     tok = AutoTokenizer.from_pretrained(H.MODEL_ID)
     base = AutoModelForCausalLM.from_pretrained(H.MODEL_ID, torch_dtype=H.DTYPE, device_map=DEVICE)
     base.eval()
-    model = LoopSplitFrogNano(base, core_start=8, core_end=24, lora_rank=64).to(DEVICE)
+    model = LoopSplitFrogNano(base, core_start=CORE_START, core_end=CORE_END, lora_rank=LORA_RANK).to(DEVICE)
     model.eval()
     ev = torch.load(args.data, map_location="cpu", weights_only=False)["eval"]
     for name, _ in SLICES:

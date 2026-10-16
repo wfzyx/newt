@@ -32,8 +32,8 @@ import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from model.loopsplit_frognano import LoopSplitFrogNano
+from model.presets import MODEL_ID, CORE_START, CORE_END, LORA_RANK
 
-MODEL_ID = "microsoft/FrogNano-4B-2609"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DTYPE = torch.bfloat16
 NEWT_HOME = os.environ.get("NEWT_HOME", "/home/ubuntu")
@@ -86,6 +86,11 @@ def gate_lora_stats(model: LoopSplitFrogNano) -> dict:
             out["loop_gate"] = [v.item() for v in model.loop_gate]
             out["proj_dev_from_I"] = (model.loop_proj.weight.float() - torch.eye(model.loop_proj.weight.shape[0], device=model.loop_proj.weight.device)).norm().item()
             out["step_emb_norm"] = [v.float().norm().item() for v in model.loop_step_emb]
+        if getattr(model, "entry_mode", "none") == "concat":
+            out["concat_alpha"] = model.concat_alpha.item()
+            out["concat_beta"] = model.concat_beta.item()
+            out["concat_BA"] = (model.concat_B.float() @ model.concat_A.float()).norm().item()
+            out["concat_scale"] = model.concat_scale.item()
         if getattr(model, "entry_mode", "none") == "reinject":
             out["entry_w"] = [torch.sigmoid(v).item() for v in model.entry_mix]
         return out
@@ -216,7 +221,7 @@ def main():
     base.eval()
     data = torch.load(args.data, map_location="cpu", weights_only=False)["eval"]
 
-    model = LoopSplitFrogNano(base, core_start=8, core_end=24, lora_rank=64).to(DEVICE)
+    model = LoopSplitFrogNano(base, core_start=CORE_START, core_end=CORE_END, lora_rank=LORA_RANK).to(DEVICE)
     if args.base:
         forward_fn = lambda x: base(x).logits  # noqa: E731
         name = "base"

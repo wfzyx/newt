@@ -32,7 +32,7 @@ from transformers import AutoTokenizer
 from datasets import load_dataset
 from evalplus.data import get_human_eval_plus
 
-MODEL_ID = "microsoft/FrogNano-4B-2609"
+from model.presets import MODEL_ID
 MAX_LEN = 512
 SEED = 20261015
 NEWT_HOME = os.environ.get("NEWT_HOME", "/home/ubuntu")

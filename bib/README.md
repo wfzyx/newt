@@ -1,7 +1,8 @@
 # Newt Bibliography — Retrofitted Recurrent Depth
 
 Papers that bear directly on turning a pretrained dense LM (FrogNano-4B-2609) into a looped / recurrent-depth model
-with a frozen base and adapters. PDFs live next to this file. Entries 1–4 are the retrofit blueprints; 5–8 are background.
+with a frozen base and adapters. PDFs live next to this file. Entries 1–4 are the retrofit blueprints; 5–8 are background;
+9–10 are the two recurrence designs that *do* beat their own base after a retrofit, and why they differ from ours.
 
 Status of this repo's own attempts is at the bottom (§ What the literature says about our setup).
 
@@ -94,6 +95,46 @@ Status of this repo's own attempts is at the bottom (§ What the literature says
 
 ---
 
+## Retrofits that work (and what they spend)
+
+## 9. ALoDLM: Adaptively Looped Diffusion Language Models (arXiv:2610.04198)
+- **File:** `2610.04198_ALoDLM.pdf` — Fang, Li et al. (Amazon AGI), 2026. Code: `amazon-science/ALoDLM`; weights CC BY-NC.
+- **Setup:** Qwen3-1.7B / Qwen3-8B converted to **masked-diffusion** LMs with a looped core. 8B split: Prelude [0,10),
+  shared Recurrent Core [10,26), Coda [26,36) — the same surgery as Newt. Max depth K=4. **Direct SFT, full weights,
+  5B tokens**, no continued pretraining.
+- **Mechanism:** inside each denoising step the core runs up to K times; after each pass the LM head commits tokens whose
+  entropy ≤ τ and feeds them back as *token embeddings*, while unresolved positions carry their latent state into the
+  next pass. A learned exit gate (trained as a latent-variable NELBO, truncated-geometric prior) halts per token.
+- **Results:** average over 11 benchmarks 65.5 vs 63.8 (1.7B) and **80.3 vs 78.5 (8B)** against the AR Qwen3 base;
+  HumanEval 87.8 vs 85.4. ≈2.7× the throughput of vLLM Qwen3-8B on GSM8K at matched accuracy (their engine, one B200).
+- **Why it does not contradict Newt:** the loop is load-bearing by construction — pass *t+1* sees newly committed tokens
+  pass *t* did not, so "ignore the loop" is not a reachable minimum. Per-token adaptive depth is what turns extra compute
+  into *less* average compute. And it is full-weight SFT at ~150× our token budget. The only retrofit in this list that
+  improves quality and speed together; the cost is leaving the AR decoding paradigm (needs their decoder).
+
+## 10. Hybrid Reasoning Agents / HybridLink (arXiv:2610.18861)
+- **File:** `2610.18861_HybridAgent.pdf` — Zou, Qi, Chen, Bianchi et al. (Together AI et al.), 2026. Code: `togethercomputer/HybridAgent`.
+- **Setup:** recurrence over *time*, not depth. A ~10M-param residual adapter `e_{t+1} = h_t + W₂σ(W₁h_t)` maps the
+  **last-layer** hidden state back to the **input embedding** of the next position; between `<latent>…</latent>` the model
+  generates without the LM head (Coconut with a learned bridge and an exit anchor). Normal AR + tools outside the span.
+- **Training:** HybridSFT stage 1 = text SFT of the backbone (anchors); stage 2 = **backbone frozen, train only HybridLink**
+  by cosine+MSE regression to target embeddings; then **HybridRL with full-parameter backbone** on multi-node H100s
+  (App. H.3). No GPU-hour figure published.
+- **Results (Qwen3-4B-Base, Table 8):** text-SFT 77.4 MATH500 / 19.0 AIME25 → HybridAgent-SFT 76.8 / 22.5 (≈ tie);
+  text-RL (ARPO) 81.8 / 31.3 → **HybridAgent-RL 82.2 / 35.2**. Headline +10.4% is vs other agent frameworks. Real win is
+  efficiency: 35–55% fewer tokens, 1.8–2.6× faster. Ablation (Table 6, 14B): identity bridge 71.4 MATH500, 2-layer
+  residual 88.2.
+- **Why it does not hit Newt's wall:** last-layer → embedding is the model's own `lm_head∘embed` round-trip, a distribution
+  it already handles every token (identity bridge already works); and a latent step *is* the next position, so there is
+  no gate to collapse. The cheap frozen-backbone stage installs the mechanism; the accuracy comes from RL.
+
+**Pattern across 9–10 vs 1–3 and our arms:** the retrofits that pay off either give the loop information the previous pass
+did not have (ALoDLM: committed tokens; HybridLink: it is the next token), or spend ≥10⁹ full-weight tokens, or both.
+A depth loop over the same input with a frozen base and ≤10⁸ tokens has no published success, and seven arms here
+reproduced that absence.
+
+---
+
 ## What the literature says about our setup
 
 | Newt (Phases A–C, ablation treatment) | What papers 1–3 do instead |
@@ -125,3 +166,18 @@ negative = better than base; all arms trained from base on the same 50/31/19 mix
 - Conclusion at this budget (≤ 8k micro-batches, frozen base, LoRA): none of the three loop-boundary designs produces a
   multi-pass model that beats a 1-pass LoRA at matched compute. The papers that do report gains use ≥ 10⁹ tokens of
   full-weight continued training (2, 3) or an intermediate-state curriculum on a 0.5B model (1).
+
+Follow-up on **Qwen3.5-0.8B** (same family, 24 layers, core 6–17; 30M tokens = 3,662 steps; `results/qwen08_study/`).
+Deltas vs the *frozen original* base; A's own eval gives base NLLs TACO 1.617 / pretrain 1.722 / func 1.496.
+
+| Arm | Trainable | GPU-min | TACO | OOD-pretrain | OOD-func | HE-164 |
+|---|---|---|---|---|---|---|
+| A  1-pass LoRA r=64, frozen base | 18.7M | 166 | −0.030 | −0.055 | −0.181 | 36 (22.0%) |
+| C  3-loop reinject (w₀=0.99), **core unfrozen** | 286M | 503 | −0.057 | −0.068 | −0.187 | 30 (18.3%) |
+| D  3-loop concat bridge (2511.07384), core unfrozen | 288M | killed @ S950 | — | — | — | — |
+
+- C's loop-3 vs *its own* loop-1 (isolates the recurrence): TACO −0.002 [CI incl. 0], pretrain −0.005, func −0.020.
+  Mix weights opened to w = 0.959 / 0.955 and flattened; ce₂ ≡ ce₃ throughout. Almost all of C's margin over A is in its
+  1-pass column (unfreezing 268M more params), not in the loop.
+- D's bridge spent its capacity re-encoding the prelude (β 1.0→0.40, |BA|↑) and shrank the carried-state gain
+  (α 0.05→0.02). Same collapse as C by a different route; stopped at 26%.

@@ -1,7 +1,11 @@
 # Project Newt — retrofitting recurrent depth onto FrogNano-4B
 
-**Status: paused (2026-10-14). Negative result.** Three loop-boundary designs, including the recipe from the
-most recent retrofit papers, were tested against a compute-matched 1-pass LoRA control. None beat it.
+**Status: closed (2026-10-16). Negative result.** Seven arms across FrogNano-4B and Qwen3.5-0.8B — tanh gates,
+zero-init gates + boundary projection, scalar prelude re-injection (2610.00673), concat bridge (2511.07384), with the
+core both frozen (LoRA) and fully unfrozen — against compute-matched 1-pass LoRA controls. In every arm the optimizer
+routed ≤5% of the signal through the loop; no arm beat its control on all three held-out slices. The literature
+(see `bib/`) contains no low-budget depth-loop retrofit that does, and the two retrofits that work (ALoDLM, HybridLink)
+change what the loop sees rather than how it is gated.
 This README is the hand-off for anyone who wants to pick the idea back up; the section
 [What it would take](#what-it-would-take) is the short version.
 
@@ -41,6 +45,9 @@ micro-batches of ≤512 tokens per step, AdamW, LoRA LR 5e-5 cosine, clip 1.0, C
 (`0.25·CE_L2 + 0.75·CE_L3` for looped arms). Data builder: `data/build_phase_d.py`.
 
 ## Results
+
+Qwen3.5-0.8B follow-up (unfrozen core, 30M tokens, concat and scalar bridges) is tabulated in
+[`bib/README.md`](bib/README.md#what-the-literature-says-about-our-setup); raw files in `results/qwen08_study/`.
 
 Paired per-document cross-entropy delta vs base (negative = better than base), 150 documents per slice,
 bootstrap 95 % CI; every CI below excludes zero. HE-40 is greedy pass@1 on the first 40 HumanEval tasks
@@ -105,6 +112,8 @@ If someone wants to continue, the experiments above say the next lever is comput
 
 ```
 model/loopsplit_frognano.py   LoopSplitFrogNano + CoreLoopLoRALayer (all variants, flag-selected)
+model/presets.py              NEWT_MODEL=frognano|qwen08 → model id + core split
+train/study_qwen08.py         Qwen3.5-0.8B arms A/B/C/D (unfrozen core, exit-loss smoothing, T=2→3 ramp, batched)
 train/ablation_500.py         the four ablation arms (control / treatment / salvage / reinject), --steps N
 train/train_phase_{a,b}.py    Phase A/B as run (historical)
 train/train_resumed_5k_to_10k.py   Phase C as run (historical)
@@ -148,6 +157,8 @@ Every script prints paired deltas with bootstrap CIs; compare arms on those, not
 6. Hao, Sukhbaatar, Su, Li et al. *Training Large Language Models to Reason in a Continuous Latent Space* (Coconut). arXiv:2412.06769 (2024).
 7. Shanghai AI Laboratory. *Intern-S2-Mobius: Decoupled Knowledge and Reasoning.* arXiv:2608.14290 (2026).
 8. Ha, Kim. *WaveFront Decoding: Parallelized Self-Speculative Decoding for Looped Language Models.* arXiv:2609.23033 (2026).
+9. Fang, Li et al. (Amazon AGI). *ALoDLM: Adaptively Looped Diffusion Language Models.* arXiv:2610.04198 (2026).
+10. Zou, Qi, Chen, Bianchi et al. *Hybrid Reasoning Agents.* arXiv:2610.18861 (2026).
 
 Annotated summaries and the mapping from each paper to this repo's design choices: [`bib/README.md`](bib/README.md).
 

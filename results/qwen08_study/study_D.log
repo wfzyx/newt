@@ -1,0 +1,31 @@
+/opt/pytorch/lib/python3.12/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  48%|████▊     | 152/320 [00:00<00:00, 1519.17it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 1759.64it/s]
+[q08_D_3662] Qwen/Qwen3.5-0.8B layers=24 core=6..17 steps=3662 tokens/step=8192
+[q08_D_3662] train={1: 10584, 2: 6615, 3: 3969} eval={'taco_test': 150, 'ood_pretrain': 150, 'ood_func': 150}
+[q08_D_3662] trainable params: 286.6M in groups ['core', 'bridge', 'mix']
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[q08_D_3662] step-0 CE_L1=1.1892 CE_L2=1.1992 CE_L3=1.1983
+[q08_D_3662] S1/3662 T=2 loss=1.4703 ce1=1.472 ce2=1.470 lr=9.17e-08 gn=5.58 a=0.050 b=1.000 |BA|=0.000 ETA 334m (5.47s/step)
+[q08_D_3662] S50/3662 T=2 loss=1.3196 ce1=1.331 ce2=1.320 lr=4.59e-06 gn=5.03 a=0.026 b=0.999 |BA|=0.027 ETA 322m (5.34s/step)
+[q08_D_3662] S100/3662 T=2 loss=1.5027 ce1=1.522 ce2=1.503 lr=9.17e-06 gn=5.00 a=0.035 b=0.879 |BA|=0.075 ETA 317m (5.34s/step)
+[q08_D_3662] S150/3662 T=2 loss=1.4704 ce1=1.487 ce2=1.470 lr=1.00e-05 gn=4.75 a=0.029 b=0.839 |BA|=0.110 ETA 312m (5.34s/step)
+[q08_D_3662] S200/3662 T=2 loss=1.5030 ce1=1.521 ce2=1.503 lr=9.99e-06 gn=4.69 a=0.030 b=0.813 |BA|=0.132 ETA 308m (5.34s/step)
+[q08_D_3662] S250 ramp: opening T=3 (probe CE2-CE1=-0.0470)
+[q08_D_3662] S250/3662 T=3 loss=1.6460 ce1=1.673 ce2=1.646 lr=9.97e-06 gn=4.89 a=0.031 b=0.784 |BA|=0.150 ETA 306m (5.37s/step)
+[q08_D_3662] S300/3662 T=3 loss=1.5710 ce1=1.588 ce2=1.571 ce3=1.571 lr=9.94e-06 gn=5.18 a=0.031 b=0.766 |BA|=0.165 ETA 328m (5.85s/step)
+[q08_D_3662] S350/3662 T=3 loss=1.1884 ce1=1.209 ce2=1.188 ce3=1.188 lr=9.90e-06 gn=4.22 a=0.036 b=0.720 |BA|=0.181 ETA 342m (6.19s/step)
+[q08_D_3662] S400/3662 T=3 loss=1.1476 ce1=1.164 ce2=1.148 ce3=1.147 lr=9.85e-06 gn=4.02 a=0.030 b=0.679 |BA|=0.195 ETA 350m (6.45s/step)
+[q08_D_3662] S450/3662 T=3 loss=1.4747 ce1=1.486 ce2=1.474 ce3=1.475 lr=9.80e-06 gn=4.95 a=0.026 b=0.648 |BA|=0.208 ETA 356m (6.65s/step)
+[q08_D_3662] S500/3662 T=3 loss=1.2135 ce1=1.234 ce2=1.214 ce3=1.214 lr=9.73e-06 gn=4.63 a=0.025 b=0.606 |BA|=0.220 ETA 359m (6.81s/step)
+[q08_D_3662] S550/3662 T=3 loss=1.3691 ce1=1.399 ce2=1.369 ce3=1.369 lr=9.66e-06 gn=4.94 a=0.024 b=0.600 |BA|=0.230 ETA 360m (6.94s/step)
+[q08_D_3662] S600/3662 T=3 loss=1.1760 ce1=1.217 ce2=1.176 ce3=1.176 lr=9.58e-06 gn=4.77 a=0.021 b=0.542 |BA|=0.242 ETA 360m (7.05s/step)
+[q08_D_3662] S650/3662 T=3 loss=1.4581 ce1=1.473 ce2=1.458 ce3=1.459 lr=9.49e-06 gn=4.49 a=0.028 b=0.491 |BA|=0.254 ETA 358m (7.14s/step)
+[q08_D_3662] S700/3662 T=3 loss=1.4069 ce1=1.423 ce2=1.407 ce3=1.407 lr=9.40e-06 gn=5.14 a=0.027 b=0.515 |BA|=0.262 ETA 356m (7.22s/step)
+[q08_D_3662] S750/3662 T=3 loss=1.3529 ce1=1.390 ce2=1.353 ce3=1.352 lr=9.30e-06 gn=5.17 a=0.023 b=0.486 |BA|=0.271 ETA 354m (7.29s/step)
+[q08_D_3662] S800/3662 T=3 loss=1.2481 ce1=1.278 ce2=1.248 ce3=1.248 lr=9.19e-06 gn=4.63 a=0.021 b=0.455 |BA|=0.280 ETA 350m (7.35s/step)
+[q08_D_3662] S850/3662 T=3 loss=1.3554 ce1=1.388 ce2=1.356 ce3=1.355 lr=9.07e-06 gn=4.44 a=0.021 b=0.449 |BA|=0.288 ETA 347m (7.40s/step)
+[q08_D_3662] S900/3662 T=3 loss=1.3451 ce1=1.400 ce2=1.346 ce3=1.345 lr=8.94e-06 gn=4.93 a=0.024 b=0.419 |BA|=0.295 ETA 343m (7.45s/step)
+[q08_D_3662] S950/3662 T=3 loss=1.4935 ce1=1.514 ce2=1.493 ce3=1.494 lr=8.81e-06 gn=5.06 a=0.025 b=0.401 |BA|=0.302 ETA 338m (7.49s/step)
