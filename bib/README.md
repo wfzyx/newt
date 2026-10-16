@@ -2,7 +2,8 @@
 
 Papers that bear directly on turning a pretrained dense LM (FrogNano-4B-2609) into a looped / recurrent-depth model
 with a frozen base and adapters. PDFs live next to this file. Entries 1–4 are the retrofit blueprints; 5–8 are background;
-9–10 are the two recurrence designs that *do* beat their own base after a retrofit, and why they differ from ours.
+9–10 are the two recurrence designs that *do* beat their own base after a retrofit, and why they differ from ours;
+11–18 are the training-free / near-free loop results that define the sub-$100 lane.
 
 Status of this repo's own attempts is at the bottom (§ What the literature says about our setup).
 
@@ -132,6 +133,115 @@ Status of this repo's own attempts is at the bottom (§ What the literature says
 did not have (ALoDLM: committed tokens; HybridLink: it is the next token), or spend ≥10⁹ full-weight tokens, or both.
 A depth loop over the same input with a frozen base and ≤10⁸ tokens has no published success, and seven arms here
 reproduced that absence.
+
+---
+
+## Training-free and near-free recurrence (the sub-$100 lane)
+
+Added 2026-10-17 after the seven-arm negative result. Common thread: **naive block re-application hurts almost
+everywhere, but short windows with damped sub-steps help without any training.** None of these report code benchmarks,
+and the gains are small (1–3 pp on knowledge MC); they are worth testing because the test costs eval time only.
+
+## 11. Training-Free Looped Transformers (arXiv:2605.23872)
+- **File:** `2605.23872_TrainingFreeLooped.pdf` — Li, Liang, Lao, Liu (UT Austin), 2026.
+- **Setup:** frozen checkpoint; an inference wrapper re-applies a contiguous window `g = L_b∘…∘L_a` K times. No new
+  parameters. Seven families (Qwen3 1.7B/4B/30B-A3B, Llama-3.2, Moonlight, DeepSeek-V2-Lite, Qwen1.5-MoE), 45 cells.
+- **Mechanism:** a pre-norm block is one forward-Euler step (h=1) on the residual ODE `ẋ = F(x) = g(x) − x`. Naive
+  looping integrates to t=K, which the post-loop layers never saw; instead sub-step the *same* interval:
+  `x_{k+1} = x_k + (1/K)·F(x_k)`, optionally anchored `β·g(x₀) + (1−β)·euler_K(x₀)` (their RK tableau). Also
+  layer-mode (`L_b^K∘…∘L_a^K`), needed on MoE to avoid routing thrash.
+- **Recipe:** window **n = 4 layers at ≈ 40–50 % depth** (`[13,16]` on Qwen3); window-size sweep on Qwen3-1.7B shows
+  a **sharp cliff at n ≥ 6**. K=2 (block) / K=2 (layer). No per-cell tuning.
+- **Results:** Qwen3-4B-Instruct **+2.64 pp MMLU-Pro, +2.01 GPQA-Main**; Qwen3-30B-A3B +1.14 CommonsenseQA;
+  Qwen1.5-MoE +2.30 ARC-C. "Naive K-fold looping degrades performance almost universally." Failures concentrate in
+  small distilled checkpoints on some knowledge-MC tasks. No generation / code benchmark reported.
+- **Relevance to Newt:** two direct hits. (a) Our core window was **16 layers (8–23)** — four times past their cliff.
+  (b) Every Newt loop entry was the naive `h ← core(h)` (the thing they show is broken) with a learned mix/gate bolted
+  on top; the damped update `h + (1/K)(core(h) − h)` was never tried. Both are testable at zero training cost.
+
+## 12. Inner Loop Inference for Pretrained Transformers (arXiv:2602.14759)
+- **File:** `2602.14759_InnerLoopInference.pdf` — Lys et al. (IMT Atlantique / Sony), 2026. Code: `jonathanlys01/looped-transformer`.
+- **Setup:** training-free middle-looping on Gemma-2 2B/9B and Llama-3 8B, window chosen by sweeping start/end on
+  WinoGrande (Gemma-2-2B best: layers 10–13, i.e. n=4 again at ≈ 40–60 % depth).
+- **Mechanism:** regularize the looped state toward the non-looped one: `ĥ_t = Σ α_i h_i` with uniform / moving-average /
+  auto-aligned (softmax on ⟨h₀,h_i⟩) weights. Noise control (matched-magnitude random perturbation) to separate
+  "loop signal" from "any perturbation".
+- **Results:** "modest but consistent": e.g. WinoGrande Gemma-2B 68.75 → 69.53 (uniform), inside the ±1.3 CI. The
+  noise control is *below* baseline, so the direction is real but the magnitude is small.
+- **Relevance:** independent confirmation of the n≈4 / mid-depth window and of interpolation-toward-base as the entry
+  rule. Their `uniform` strategy is in `model/tf_loop.py`.
+
+## 13. LoopUS: Recasting Pretrained LLMs into Looped Latent Refinement Models (arXiv:2605.11011)
+- **File:** `2605.11011_LoopUS.pdf` — 2026. Code/page: `thrillcrazyer.github.io/LoopUS`.
+- **Setup:** Qwen3-1.7B/4B/8B, Phi-4, TinyLlama recast as encoder (≈ layers 0–1 or 0–5) / looped middle (everything
+  else) / decoder (last layer). **Full-weight post-training, 3B FineWeb-Edu tokens**, B=20 loop steps with K=5
+  randomly supervised depths per batch (random deep supervision; non-supervised steps run under `no_grad` and detached).
+- **Mechanism:** Mamba-style selective decay gate between iterations: `δ = M(h) − h`, `Δ = softplus(W_Δ δ + b_Δ)`,
+  `α = exp(Δ ⊙ A)` with learned `A < 0` so `α ∈ (0,1)` per token per channel, `h' = α⊙M(h) + (1−α)⊙h`. Monotonicity
+  loss across depths and a confidence head for adaptive exit (max 8 iterations at inference).
+- **Results (Table 1, zero-shot):** Qwen3-4B avg 60.3 → 62.1 (+1.8), WikiText ppl 16.4 → 13.9; Qwen3-8B +2.2;
+  Qwen3-1.7B +1.6. Claims better adaptation efficiency than #3 and #4 on TinyLlama with fewer tokens (Table 2, numbers
+  taken from the other papers, not a controlled comparison).
+- **Relevance:** the damping idea of #11 made learnable and input-dependent — the right *shape* for a gate (it damps the
+  update, not the branch). But 3B full-weight tokens is the ALoDLM price class, not ours. Its gate is the thing to
+  copy if a training-free window shows a signal and we then spend ≤ $20 on adaptation.
+
+## 14. Think-at-Hard: Selective Latent Iterations (arXiv:2511.08577)
+- **File:** `2511.08577_ThinkAtHard.pdf` — Fu et al. (Tsinghua NICS), 2025/26. Code: `thu-nics/TaH`.
+- **Setup:** Qwen3-0.6B/1.7B-Base; whole-model recurrence (Ponder-style: next input = logit-weighted embedding of the
+  last hidden state). A 5–18M "decider" MLP triggers a second pass only on tokens predicted to be wrong; LoRA
+  (10–34M) is active only on pass ≥ 2; duo-causal attention lets pass-2 queries see pass-1 KV.
+- **Training:** two-stage SFT on Open-R1 math, **300M tokens, full backbone + LoRA** in stage 1; decider in stage 2.
+- **Results:** "latent overthinking" — most tokens are already right after pass 1 and uniform looping flips some to
+  wrong; TaH iterates on ≈ 7 % of tokens at 1.07× depth. TaH2 (same repo) +3.4 pp AIME at matched test-time compute.
+- **Relevance:** mechanistic explanation of why our uniform-depth loops showed ce₂ > ce₁ on OOD slices (we re-decided
+  every token, including the 90 % that were already correct). Full-backbone SFT puts it outside budget, but the
+  *decider-gated* second pass is the cheap version of ALoDLM's adaptive depth and is compatible with a training-free
+  window loop (loop only where the base is uncertain).
+
+## 15. Allocating Recurrent Compute in Looped Language Models (arXiv:2608.18230)
+- **File:** `2608.18230_AllocatingRecurrentCompute.pdf` — Guo, Zhu, Ye, Eshraghian, 2026.
+- **Setup:** from-scratch, pure Gated-DeltaNet backbones at 15M and 110M, 52B tokens, matched seeds. Asks *what should
+  loop*: the mixer, the FFN, or the whole block.
+- **Finding:** "assign recurrent depth to the stateful mixer first": looping only the GDN mixer T=4× per layer keeps
+  41.5 % of full-loop CORE gain at 54 % of the FLOPs; repeated FFNs are "expensive refinement", successive GDN passes
+  produce non-redundant memory transitions. Open whether this holds for softmax attention or hybrids.
+- **Relevance:** FrogNano is 3/4 Gated DeltaNet. If anything in the training-free sweep helps, a mixer-only repeat
+  (DeltaNet twice, MLP once) is the next cheapest variant and halves the loop overhead. Not a retrofit result.
+
+## 16. Transformers Stop Thinking Too Early, and a Tiny LoRA Fixes It (arXiv:2609.36585)
+- **File:** `2609.36585_StopThinkingTooEarly.pdf` — Deng & Wang (Georgia Tech), 2026.
+- **Setup:** 13 dense base models (Qwen3 0.6–14B, Llama, OLMo, Gemma) plus Ouro / Huginn looped models on a synthetic
+  multi-hop reference-following task. A **rank-8 LoRA at one early layer, all base weights frozen**, raises Qwen3-8B
+  from 15.5 % to 99 % on 24-line chains; Ouro-1.4B needs extra *pretrained* loops to go further (60 → 160+ lines).
+- **Relevance:** a frozen-base, tiny-LoRA intervention *can* install a new multi-step computation — when the task is
+  narrow and the supervision is dense. Supports Shapiro (#1) and bounds what to expect: mechanism installation, not
+  broad capability. Not a looping retrofit of a dense model.
+
+## 17. Skip a Layer or Loop It? Program-of-Layers (arXiv:2606.06574)
+- **File:** `2606.06574_PoLar.pdf` — Li & Zhou (MBZUAI), 2026.
+- **Setup:** frozen Llama-3.2-3B, Qwen2.5-3B, Qwen3-8B, Qwen1.5-MoE on DART-Math; search over per-input programs that
+  skip or repeat pretrained layers; then a small predictor network emits the program.
+- **Finding:** loop-only beats skip-only; combined is best; for most inputs a *shorter* program matches or beats the
+  full forward, and wrong base predictions are often fixed by an alternative program.
+- **Relevance:** evidence that the per-input best loop configuration varies, so a single global window (#11) is a floor,
+  not a ceiling. The predictor is cheap to train (it never touches the base) — the TaH decider idea applied to layers.
+
+## 18. Layer Duplication in LLMs (ACL Findings 2025) and RYS (blog, 2024–26)
+- **File:** `ACL2025_LayerDuplication.pdf`; RYS: `dnhkng.github.io/posts/rys`, repo `dnhkng/RYS`, HF `dnhkng/RYS-*`.
+- **Setup:** duplicate a block of middle layers in the weight file, no training. RYS on Qwen2-72B (7 layers) topped the
+  Open LLM Leaderboard at the time (+2.6 avg; MATH-L5 +8.2, MUSR +17.7, IFEval −2.1); Qwen3.5-27B scan (64 layers):
+  best Pareto configs duplicate 1–8 layers around 30–35 (≈ 50 % depth), measured on hand-made math/EQ probes only.
+  ACL paper: duplicating *early attention* layers once or twice "often" helps, with and without fine-tuning.
+- **Relevance:** the naive strategy at tiny windows is not always harmful — on some models/tasks a 1–5-layer repeat is
+  a free win. The sweep in `eval/tf_loop_sweep.py` includes `naive` for exactly this reason. Caveats: leaderboard-era
+  numbers, probe benchmarks, no code benchmark, and every duplicate layer is a permanent +3 % latency.
+
+**Reading of 11–18 together:** the published, reproducible, zero-training gains come from (i) a *short* mid-depth window
+(n ≈ 2–4, ≈ 40–60 % depth), (ii) a *damped* re-application (sub-step or interpolate toward the base state), and (iii)
+at most K=2–3. Our seven arms satisfied none of the three. The cheapest possible next test is therefore a sweep over
+(i)–(iii) on the frozen FrogNano with the existing NLL slices and HE-164 — eval cost only (~$5 of A10G) — and only if
+a cell wins do we spend a two-digit sum fitting a LoopUS-style decay gate or a TaH-style decider on top.
 
 ---
 

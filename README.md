@@ -1,6 +1,7 @@
 # Project Newt — retrofitting recurrent depth onto FrogNano-4B
 
-**Status: closed (2026-10-16). Negative result.** Seven arms across FrogNano-4B and Qwen3.5-0.8B — tanh gates,
+**Status: reopened 2026-10-17 on a zero-training lane** (see [Training-free loop sweep](#training-free-loop-sweep)).
+The training lane is **closed (2026-10-16) as a negative result.** Seven arms across FrogNano-4B and Qwen3.5-0.8B — tanh gates,
 zero-init gates + boundary projection, scalar prelude re-injection (2610.00673), concat bridge (2511.07384), with the
 core both frozen (LoRA) and fully unfrozen — against compute-matched 1-pass LoRA controls. In every arm the optimizer
 routed ≤5% of the signal through the loop; no arm beat its control on all three held-out slices. The literature
@@ -108,6 +109,23 @@ If someone wants to continue, the experiments above say the next lever is comput
    inference. [WaveFront decoding](https://arxiv.org/abs/2609.23033) is how looped models pay the latter down; the
    compute-matched Qwen3-4B still beat looped-1.7B in 2610.00673, so expect the margin to be modest even if it exists.
 
+## Training-free loop sweep
+
+A second reading of the literature (bib entries 11–18: 2605.23872, 2602.14759, LoopUS, RYS, …) shows that every
+reproducible *zero-training* loop gain uses (i) a **short** window, n ≈ 2–4 layers at 40–60 % depth (sharp cliff at
+n ≥ 6), (ii) a **damped** re-application `x ← x + (1/K)(g(x) − x)` or an interpolation toward the base state, and
+(iii) K = 2–3. Our seven trained arms satisfied none of these: a 16-layer window with a naive `h ← core(h)` entry.
+
+`model/tf_loop.py` is an inference wrapper over the frozen HF model (no parameters; K=1 is bit-exact base) with
+strategies `naive | euler | anchor | uniform` in `block` or `layer` mode. `eval/tf_loop_sweep.py` sweeps 34 windows ×
+6 strategies on the existing NLL slices (paired per-doc delta vs base, bootstrap CI), refines the top cells on the full
+150-doc slices, and runs HE-164 on the best three. Cost: eval only, ≈ 2.5 h of A10G.
+
+Results go in `results/tf_loop/` when the sweep finishes. Decision rule: a cell counts only if it is ≤ 0 on both OOD
+slices with CIs excluding zero *and* does not lose HE-164 by more than noise (≈ ±4). If a cell wins, the next ≤ $20
+step is fitting a LoopUS-style decay gate (bib 13) or a TaH-style decider (bib 14) on top of it; if nothing wins,
+the project is closed at every budget we can reach.
+
 ## Repo layout
 
 ```
@@ -124,7 +142,9 @@ eval/phase_d_harness.py       NLL slices, HumanEval-N, MBPP-100, gate/LoRA stats
 eval/stage0_loop_diag.py      per-loop CE vs base with paired bootstrap; loop-count ablation on HE-40
 tests/                        Phase A–C eval scripts (historical) + test_step0_parity.py
 results/stage0_ablation/      every result JSON and training log from the ablations
-bib/                          8 papers (PDF) + annotated README
+model/tf_loop.py              training-free loop wrapper (window, K, strategy, mode) over the frozen HF model
+eval/tf_loop_sweep.py         window/strategy sweep → paired NLL deltas, refine, HE-164 on the top cells
+bib/                          18 papers (PDF) + annotated README
 checkpoints/                  not in git (~10 GB); see below
 ```
 
@@ -143,6 +163,7 @@ python -m train.ablation_500 --arm control  --steps 1200 # 1-pass bar          (
 python -m train.ablation_500 --arm reinject --steps 500  # best looped arm     (~80 min A10G)
 python -m eval.stage0_loop_diag                          # per-loop diagnostics on saved checkpoints
 python -m eval.phase_d_harness --ckpt X.pt --full        # HE-164 + MBPP-100 + NLL slices
+python -m eval.tf_loop_sweep --sweep-docs 80 --refine 10 --he-top 3   # training-free sweep (~2.5 h A10G)
 ```
 
 Every script prints paired deltas with bootstrap CIs; compare arms on those, not on HE-40.
@@ -159,6 +180,14 @@ Every script prints paired deltas with bootstrap CIs; compare arms on those, not
 8. Ha, Kim. *WaveFront Decoding: Parallelized Self-Speculative Decoding for Looped Language Models.* arXiv:2609.23033 (2026).
 9. Fang, Li et al. (Amazon AGI). *ALoDLM: Adaptively Looped Diffusion Language Models.* arXiv:2610.04198 (2026).
 10. Zou, Qi, Chen, Bianchi et al. *Hybrid Reasoning Agents.* arXiv:2610.18861 (2026).
+11. Li, Liang, Lao, Liu. *Training-Free Looped Transformers.* arXiv:2605.23872 (2026).
+12. Lys et al. *Inner Loop Inference for Pretrained Transformers: Unlocking Latent Capabilities Without Training.* arXiv:2602.14759 (2026).
+13. *LoopUS: Recasting Pretrained LLMs into Looped Latent Refinement Models.* arXiv:2605.11011 (2026).
+14. Fu et al. *Think-at-Hard: Selective Latent Iterations to Improve Reasoning Language Models.* arXiv:2511.08577 (2025).
+15. Guo, Zhu, Ye, Eshraghian. *Allocating Recurrent Compute in Looped Language Models.* arXiv:2608.18230 (2026).
+16. Deng, Wang. *Transformers Stop Thinking Too Early, and a Tiny LoRA Fixes It.* arXiv:2609.36585 (2026).
+17. Li, Zhou. *Skip a Layer or Loop It? Learning Program-of-Layers in LLMs.* arXiv:2606.06574 (2026).
+18. *Layer Duplication in LLMs.* Findings of EMNLP 2025; and Ng, *RYS* (dnhkng.github.io/posts/rys).
 
 Annotated summaries and the mapping from each paper to this repo's design choices: [`bib/README.md`](bib/README.md).
 
