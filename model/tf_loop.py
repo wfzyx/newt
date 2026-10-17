@@ -10,6 +10,8 @@ Strategies (x0 = window input):
   euler   : x <- x + (1/K) F(x), K times                        (damped sub-steps; the paper's main recipe)
   anchor  : beta * g(x0) + (1 - beta) * euler_K(x0)             (paper's RK tableau: interpolate toward base)
   uniform : x_{k+1} = g(mean(x_0..x_k))                         (arXiv:2602.14759 "Uniform" interpolation)
+  noise   : g(x0) + (1 - beta) * eps,  |eps| per token = |euler_K(x0) - g(x0)| per token
+            (control from arXiv:2602.14759: the loop's deviation from base replaced by matched-norm Gaussian noise)
 
 Modes:
   block   : apply the strategy to the whole window operator g
@@ -23,6 +25,15 @@ from model.loopsplit_frognano import _text_backbone
 
 
 class TFLoop:
+    _gens = {}
+
+    @classmethod
+    def _gen(cls, device):
+        key = str(device)
+        if key not in cls._gens:
+            cls._gens[key] = torch.Generator(device=device).manual_seed(0)
+        return cls._gens[key]
+
     def __init__(self, hf_model):
         self.hf = hf_model
         self.bb = _text_backbone(hf_model)
@@ -63,7 +74,7 @@ class TFLoop:
             for _ in range(K):
                 x = g(x)
             return x
-        if strategy in ("euler", "anchor"):
+        if strategy in ("euler", "anchor", "noise"):
             x = x0
             gx0 = None
             for k in range(K):
@@ -73,6 +84,11 @@ class TFLoop:
                 x = x + (gx - x) / K
             if strategy == "anchor":
                 return beta * gx0 + (1.0 - beta) * x
+            if strategy == "noise":
+                d = (x - gx0).float()
+                eps = torch.randn(d.shape, device=d.device, dtype=torch.float32, generator=TFLoop._gen(d.device))
+                eps = eps * (d.norm(dim=-1, keepdim=True) / eps.norm(dim=-1, keepdim=True).clamp_min(1e-6))
+                return gx0 + (1.0 - beta) * eps.to(gx0.dtype)
             return x
         if strategy == "uniform":
             hist = [x0]
