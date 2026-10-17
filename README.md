@@ -1,12 +1,12 @@
 # Project Newt — retrofitting recurrent depth onto FrogNano-4B
 
-**Status: reopened 2026-10-17 on a zero-training lane** (see [Training-free loop sweep](#training-free-loop-sweep)).
-The training lane is **closed (2026-10-16) as a negative result.** Seven arms across FrogNano-4B and Qwen3.5-0.8B — tanh gates,
-zero-init gates + boundary projection, scalar prelude re-injection (2610.00673), concat bridge (2511.07384), with the
-core both frozen (LoRA) and fully unfrozen — against compute-matched 1-pass LoRA controls. In every arm the optimizer
-routed ≤5% of the signal through the loop; no arm beat its control on all three held-out slices. The literature
-(see `bib/`) contains no low-budget depth-loop retrofit that does, and the two retrofits that work (ALoDLM, HybridLink)
-change what the loop sees rather than how it is gated.
+**Status: closed (2026-10-17) as an archived negative result across all lanes (training and zero-training).**
+Seven training arms across FrogNano-4B and Qwen3.5-0.8B — tanh gates, zero-init gates + boundary projection,
+scalar prelude re-injection (2610.00673), concat bridge (2511.07384), with the core both frozen (LoRA) and fully unfrozen —
+failed to beat compute-matched 1-pass LoRA controls. In every arm the optimizer routed ≤5% through the loop.
+A follow-up 204-configuration training-free sweep on FrogNano-4B produced an apparent +5–6 pass@1 gain on HumanEval-164
+at layer window [8,11], but a matched-norm random noise control reproduced the identical gain (+5), proving the effect
+was a stochastic greedy boundary perturbation rather than recursive computation.
 This README is the hand-off for anyone who wants to pick the idea back up; the section
 [What it would take](#what-it-would-take) is the short version.
 
@@ -121,10 +121,21 @@ strategies `naive | euler | anchor | uniform` in `block` or `layer` mode. `eval/
 6 strategies on the existing NLL slices (paired per-doc delta vs base, bootstrap CI), refines the top cells on the full
 150-doc slices, and runs HE-164 on the best three. Cost: eval only, ≈ 2.5 h of A10G.
 
-Results go in `results/tf_loop/` when the sweep finishes. Decision rule: a cell counts only if it is ≤ 0 on both OOD
-slices with CIs excluding zero *and* does not lose HE-164 by more than noise (≈ ±4). If a cell wins, the next ≤ $20
-step is fitting a LoopUS-style decay gate (bib 13) or a TaH-style decider (bib 14) on top of it; if nothing wins,
-the project is closed at every budget we can reach.
+### Sweep, re-check, and noise-control outcomes
+
+The 204-configuration sweep (`results/tf_loop/tf_loop_sweep.json`) showed tiny NLL movements (~1e-3 nats) whose sign
+depended on the window. Top candidate `[8,11]` anchor K=2 β=0.5 appeared to improve greedy coding:
+
+| Configuration | HE-164 (pass@1, 256 tok) | MBPP-100 (pass@1) | Discordant pairs vs base |
+|---|---|---|---|
+| Base FrogNano-4B | 99 / 164 | 59 / 100 | — |
+| `[8,11]` anchor K=2 β=0.5 (re-check) | 105 / 164 (+6) | 64 / 100 (+5) | HE 1:7 (p=0.070), MBPP 2:7 (p=0.180) |
+| `[8,11]` matched-norm NOISE control | 104 / 164 (+5) | 60 / 100 (+1) | HE 1:6 (p=0.125), MBPP 1:2 (p=1.000) |
+
+The matched-norm noise control (the boundary vector replaced by random Gaussian noise of equal token-level norm,
+scaled by 1-β) reproduced the HE-164 gain (+5 vs +6). This falsified the recurrence hypothesis: FrogNano's greedy decoding
+is non-optimal on borderline tasks, so *any* small boundary kick at layer 11 nudges marginal tokens across the greedy threshold.
+Recurrence per se contributed nothing.
 
 ## Repo layout
 
